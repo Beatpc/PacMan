@@ -146,4 +146,32 @@ public class PacMan extends JPanel{
             }
         }
     }
+
+    // function
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+        draw(g);
+    }
+
+    public void draw(Graphics g){
+        // draw Pacman
+        g.drawImage(pacman.image, pacman.x, pacman.y, pacman.width, pacman.height, null);
+
+        // draw the map walls
+        for(Block wall : walls){
+            g.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height, null);
+        }
+
+        // draw the 4 ghosts
+        for(Block ghost : ghosts){
+            g.drawImage(ghost.image, ghost.x, ghost.y, ghost.width, ghost.height, null);
+        }
+
+        // draw the food
+        g.setColor(Color.WHITE);
+        for(Block food : foods){
+            g.fillRect(food.x, food.y, food.width, food.height);
+        }
+    }
+
 }
