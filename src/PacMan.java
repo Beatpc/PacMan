@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
 
-public class PacMan extends JPanel{
+public class PacMan extends JPanel implements ActionListener, KeyListener{
 
     class Block{
         int x;
@@ -16,6 +16,9 @@ public class PacMan extends JPanel{
         // for the ghosts and Pacman (always have the same starting position)
         int startX;
         int startY;
+        char direction = 'U'; // U D L R
+        int velocityX = 0;
+        int velocityY = 0;
 
         // constructor
         Block(Image image, int x, int y, int width, int height){
@@ -26,6 +29,32 @@ public class PacMan extends JPanel{
             this.height = height;
             this.startX = x;
             this.startY = y;
+        }
+
+        void updateDirection(char direction){
+            this.direction = direction;
+            updateVelocity();
+        }
+
+        void updateVelocity(){
+
+            if(this.direction == 'U'){
+                this.velocityX = 0;
+                this.velocityY = -tileSize/4;
+
+            }else if(this.direction == 'D'){
+                this.velocityX = 0;
+                this.velocityY = tileSize/4;
+
+            }else if(this.direction == 'L'){
+                this.velocityX = -tileSize/4;
+                this.velocityY = 0;
+
+            }else if(this.direction == 'R'){
+                this.velocityX = tileSize/4;
+                this.velocityY = 0;
+
+            }
         }
     }
 
@@ -80,10 +109,14 @@ public class PacMan extends JPanel{
     HashSet<Block> ghosts;
     Block pacman;
 
+    Timer gameLoop;
+
     // constructor
     PacMan(){
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.BLACK);
+        addKeyListener(this);
+        setFocusable(true);
  
         // load game images
         wallImage = new ImageIcon(getClass().getResource("./wall.png")).getImage();
@@ -98,6 +131,10 @@ public class PacMan extends JPanel{
         pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
 
         loadMap();
+
+        // how long it takes to start the timer (miliseconds gone between frames)
+        gameLoop = new Timer(50, this);
+        gameLoop.start();
     }
 
     // function to create the map with the loaded images
@@ -160,7 +197,7 @@ public class PacMan extends JPanel{
         // draw the map walls
         for(Block wall : walls){
             g.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height, null);
-        }
+        } 
 
         // draw the 4 ghosts
         for(Block ghost : ghosts){
@@ -171,6 +208,42 @@ public class PacMan extends JPanel{
         g.setColor(Color.WHITE);
         for(Block food : foods){
             g.fillRect(food.x, food.y, food.width, food.height);
+        }
+    }
+
+    public void move(){
+        pacman.x += pacman.velocityX;
+        pacman.y += pacman.velocityY;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        move(); // update the positions of all the objects
+        repaint(); // and then "paint" the game board
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        //System.out.println("KeyEvent: "+ e.getKeyCode());
+
+        if(e.getKeyCode() == KeyEvent.VK_UP){
+            pacman.updateDirection('U');
+
+        }else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+            pacman.updateDirection('D');
+            
+        }else if(e.getKeyCode() == KeyEvent.VK_LEFT){
+            pacman.updateDirection('L');
+            
+        }else if(e.getKeyCode() == KeyEvent.VK_RIGHT){
+            pacman.updateDirection('R');
+            
         }
     }
 

@@ -12,8 +12,8 @@ public class App {
 
         // create the game window
         JFrame frame = new JFrame("Pac Man Game");
-        frame.setVisible(true);
-        //frame.setSize(boardWidth, boardHeight);
+        //frame.setVisible(true);
+        frame.setSize(boardWidth, boardHeight);
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -22,6 +22,7 @@ public class App {
         PacMan pacmanGame = new PacMan();
         frame.add(pacmanGame);
         frame.pack();
-        frame.setSize(boardWidth, boardHeight);
+        pacmanGame.requestFocus();
+        frame.setVisible(true);
     }
 }
