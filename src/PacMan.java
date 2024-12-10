@@ -271,6 +271,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
             if(collision(ghost, pacman)){
                 lives -= 1;
+
+                if(lives == 0){
+                    gameOver = true;
+                    return;
+                }
                 resetPositions();
             }
 
@@ -306,6 +311,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         }
 
         foods.remove(foodEaten);
+
+        if(foods.isEmpty()){
+            loadMap();
+            resetPositions();
+        }
     }
 
     // collision function between pacman, ghsots, walls, food
@@ -330,6 +340,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     public void actionPerformed(ActionEvent e) {
         move(); // update the positions of pacman
         repaint(); // and then "paint" the game board
+
+        if(gameOver){
+            gameLoop.stop(); // program stops calling the actionPerformed() function
+        }
     }
 
     @Override
@@ -340,7 +354,16 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
     @Override
     public void keyReleased(KeyEvent e) {
-        //System.out.println("KeyEvent: "+ e.getKeyCode());
+        
+        //reset the game after Game Over
+        if(gameOver){
+            loadMap();
+            resetPositions();
+            lives = 3;
+            score = 0;
+            gameOver = false;
+            gameLoop.start();
+        }
 
         if(e.getKeyCode() == KeyEvent.VK_UP){
             pacman.updateDirection('U');
