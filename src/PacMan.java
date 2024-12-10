@@ -70,6 +70,12 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
             }
         }
+
+        // reset the positions when pacman collides with a ghost
+        void reset(){
+            this.x = this.startX;
+            this.y = this.startY;
+        }
     }
 
     // set the dimensions of the JPanel (same size as game window)
@@ -124,6 +130,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     Block pacman;
 
     Timer gameLoop;
+    char[] directions = {'U', 'D', 'L', 'R'}; // up, down, left, right
+    Random random = new Random();
+    int score = 0;
+    int lives = 3;
+    boolean gameOver = false;
 
     // constructor
     PacMan(){
@@ -145,6 +156,12 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
 
         loadMap();
+
+        // assign each ghost a direction
+        for(Block ghost : ghosts){
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
 
         // how long it takes to start the timer (miliseconds gone between frames)
         gameLoop = new Timer(50, this);
@@ -187,7 +204,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
                 }else if(tileMapChar == 'P'){ // Pacman
                     pacman = new Block(pacmanRightImage, x, y, tileSize, tileSize);
-                    ghosts.add(pacman);
 
                 }else if(tileMapChar == ' '){ // Food
                     Block food = new Block(null, x + 14, y + 14, 4, 4); // so that it is in the middle
@@ -198,7 +214,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         }
     }
 
-    // function
+
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         draw(g);
@@ -223,6 +239,16 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         for(Block food : foods){
             g.fillRect(food.x, food.y, food.width, food.height);
         }
+
+        // display score
+        g.setFont(new Font("Arial", Font.PLAIN, 18));
+
+        if(gameOver){
+            g.drawString("Game Over: " + String.valueOf(score), tileSize/2, tileSize/2);
+
+        }else{
+            g.drawString("x" + String.valueOf(lives) + "Score: " + String.valueOf(score), tileSize/2, tileSize/2);
+        }
     }
 
     public void move(){
@@ -238,13 +264,66 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                 break;
             }
         }
+
+        
+        // check ghost collision
+        for(Block ghost : ghosts){
+
+            if(collision(ghost, pacman)){
+                lives -= 1;
+                resetPositions();
+            }
+
+            // if the ghost is in the middle row and is stuck, we force it to go up
+            if(ghost.y == tileSize*9 && ghost.direction != 'U' && ghost.direction != 'D'){
+                ghost.updateDirection('U');
+            }
+
+            ghost.x += ghost.velocityX;
+            ghost.y += ghost.velocityY;
+
+            for(Block wall : walls){
+                if(collision(ghost, wall) || ghost.x <= 0 || ghost.x + ghost.width >= boardWidth){
+                    ghost.x -= ghost.velocityX;
+                    ghost.y -= ghost.velocityY;
+
+                    // ghost must change directions immediately
+                    char newDirection = directions[random.nextInt(4)];
+                    ghost.updateDirection(newDirection);
+
+                }
+            }
+        }
+
+        // check food collision
+        Block foodEaten = null;
+
+        for(Block food : foods){
+            if(collision(pacman, food)){
+                foodEaten = food;
+                score += 10;
+            }
+        }
+
+        foods.remove(foodEaten);
     }
 
     // collision function between pacman, ghsots, walls, food
     public boolean collision(Block a, Block b){
-
         return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 
+    }
+
+    public void resetPositions(){
+        pacman.reset();
+        pacman.velocityX = 0;
+        pacman.velocityY = 0;
+
+        for(Block ghost: ghosts){
+            ghost.reset();
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
     }
 
     @Override
